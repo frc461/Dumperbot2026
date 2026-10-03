@@ -3,10 +3,27 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut; 
 import com.ctre.phoenix6.hardware.TalonFX; 
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+//import com.revrobotics.AbsoluteEncoder;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import frc.robot.constants.*;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Hood extends SubsystemBase {
+public class Launcher extends SubsystemBase {
     
     private final TalonFX MainRoller1 = new TalonFX(1);
     private final TalonFX MainRoller2 = new TalonFX(2);
@@ -14,9 +31,9 @@ public class Hood extends SubsystemBase {
     private final TalonFX MainRoller4 = new TalonFX(2);
     private final TalonFX Kicker1 = new TalonFX(2);
     private final TalonFX Kicker2 = new TalonFX(2);
-    private final TalonFX Kicker3 = new TalonFX(2);
+    private final TalonFX HoodKraken = new TalonFX(2);
     
-    private double targetFlywheelRPM = 0.0;
+    private double targetRollerRPM = 0.0;
     private double targetHoodPosition = 0.0;
 
     private final VelocityVoltage velocityControl = new VelocityVoltage(0);
@@ -50,29 +67,54 @@ public class Hood extends SubsystemBase {
         
 
 
-        FlywheelAKraken.getConfigurator().apply(new TalonFXConfiguration());
+        MainRoller1.getConfigurator().apply(new TalonFXConfiguration());
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.CurrentLimits.SupplyCurrentLimit = 40;
         config.Slot0.kP = .4;
         config.Slot0.kI = 0;
         config.Slot0.kD = 0.0;
         config.Slot0.kV = 0.2056;
-        FlywheelAKraken.getConfigurator().apply(config);
+        MainRoller1.getConfigurator().apply(config);
 
-        FlywheelBKraken.getConfigurator().apply(new TalonFXConfiguration());
+        MainRoller2.getConfigurator().apply(new TalonFXConfiguration());
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.CurrentLimits.SupplyCurrentLimit = 40;
         config.Slot0.kP = .4;
         config.Slot0.kI = 0;
         config.Slot0.kD = 0.0;
         config.Slot0.kV = 0.2056;
-        FlywheelBKraken.getConfigurator().apply(config);
+        MainRoller2.getConfigurator().apply(config);
 
-        KickerKraken.getConfigurator().apply(new TalonFXConfiguration());
+        MainRoller3.getConfigurator().apply(new TalonFXConfiguration());
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.CurrentLimits.SupplyCurrentLimit = 40;
-        KickerKraken.setControl(
-            new Follower(50, MotorAlignmentValue.Aligned)
+        config.Slot0.kP = .4;
+        config.Slot0.kI = 0;
+        config.Slot0.kD = 0.0;
+        config.Slot0.kV = 0.2056;
+        MainRoller3.getConfigurator().apply(config);
+
+        MainRoller4.getConfigurator().apply(new TalonFXConfiguration());
+        config.CurrentLimits.SupplyCurrentLimitEnable = true;
+        config.CurrentLimits.SupplyCurrentLimit = 40;
+        config.Slot0.kP = .4;
+        config.Slot0.kI = 0;
+        config.Slot0.kD = 0.0;
+        config.Slot0.kV = 0.2056;
+        MainRoller4.getConfigurator().apply(config);
+
+        Kicker1.getConfigurator().apply(new TalonFXConfiguration());
+        config.CurrentLimits.SupplyCurrentLimitEnable = true;
+        config.CurrentLimits.SupplyCurrentLimit = 40;
+        Kicker1.setControl(
+            new Follower(2, MotorAlignmentValue.Aligned)
+        );
+
+        Kicker2.getConfigurator().apply(new TalonFXConfiguration());
+        config.CurrentLimits.SupplyCurrentLimitEnable = true;
+        config.CurrentLimits.SupplyCurrentLimit = 40;
+        Kicker2.setControl(
+            new Follower(2, MotorAlignmentValue.Aligned)
         );
 
         SmartDashboard.putNumber(KEY_HOOD_ANGLE, 0.0);
@@ -86,26 +128,41 @@ public class Hood extends SubsystemBase {
     private final VoltageOut voltageControl = new VoltageOut(0);
 
     public void setVoltage(double volts) {
-        FlywheelAKraken.setControl(voltageControl.withOutput(volts));
+        MainRoller1.setControl(voltageControl.withOutput(volts));
     }
 
-    public void setFlyWheelBVoltage(double volts) {
-        FlywheelBKraken.setControl(voltageControl.withOutput(volts));
+    public void setMainRoller2Voltage(double volts) {
+        MainRoller2.setControl(voltageControl.withOutput(volts));
     }
 
-    public void setKickerVoltage(double volts) {
-        KickerKraken.setControl(voltageControl.withOutput(volts));
+    public void setMainRoller3Voltage(double volts) {
+        MainRoller3.setControl(voltageControl.withOutput(volts));
+    }
+
+    public void setMainRoller4Voltage(double volts) {
+        MainRoller4.setControl(voltageControl.withOutput(volts));
+    }
+
+    public void setKicker1Voltage(double volts) {
+        Kicker1.setControl(voltageControl.withOutput(volts));
 
     }
 
-    public void setFlywheelVelocity(double RPM) {
-        this.targetFlywheelRPM = RPM;
+    public void setKicker2Voltage(double volts) {
+        Kicker2.setControl(voltageControl.withOutput(volts));
+
+    }
+
+    public void setRollerVelocity(double RPM) {
+        this.targetRollerRPM = RPM;
         
     }
-    public void runFlyWheel() {
-        double rps = targetFlywheelRPM / 60.0;
-        FlywheelAKraken.setControl(velocityControl.withVelocity(rps) );
-        FlywheelBKraken.setControl(velocityControl.withVelocity(rps) );   
+    public void runRollers() {
+        double rps = targetRollerRPM / 60.0;
+        MainRoller1.setControl(velocityControl.withVelocity(rps) );
+        MainRoller2.setControl(velocityControl.withVelocity(rps) );
+        MainRoller3.setControl(velocityControl.withVelocity(rps) ); 
+        MainRoller4.setControl(velocityControl.withVelocity(rps) );   
     }
 
     public void setHoodPosition(double pose) {
@@ -128,19 +185,24 @@ public class Hood extends SubsystemBase {
     
     
     public void setKickerVelocity(double RPM) {
-        KickerKraken.setControl(velocityControl.withVelocity(RPM / 60.0));
+        Kicker1.setControl(velocityControl.withVelocity(RPM / 60.0));
+    }
+
+    public void setKicker2Velocity(double RPM) {
+        Kicker2.setControl(velocityControl.withVelocity(RPM / 60.0));
     }
 
     public void shuttle() {
-        setFlywheelVelocity(-2500);
-        runFlyWheel();
+        setRollerVelocity(-2500);
+        runRollers();
         setHoodPosition(2.65);
         runHood();
     }
 
-    public void stopFlyWheels() {
-        FlywheelAKraken.stopMotor();
-        FlywheelBKraken.stopMotor();
+    public void stopMainRollers() {
+        MainRoller1.stopMotor();
+        MainRoller2.stopMotor();
+        MainRoller3.stopMotor();
     }
 
     private static final String KEY_FLY_RPM = "Launcher RPM";
@@ -150,9 +212,9 @@ public class Hood extends SubsystemBase {
     @Override
     public void periodic() {
 
-        SmartDashboard.putNumber("Flywheel Actual RPM", FlywheelAKraken.getVelocity().getValueAsDouble() * 60.0);
-        SmartDashboard.putNumber("Flywheel Target RPM", targetFlywheelRPM);
-        SmartDashboard.putNumber("Flywheel Temperature", FlywheelAKraken.getDeviceTemp().getValueAsDouble());
+        SmartDashboard.putNumber("Flywheel Actual RPM", MainRoller1.getVelocity().getValueAsDouble() * 60.0);
+        SmartDashboard.putNumber("Flywheel Target RPM", targetRollerRPM);
+        SmartDashboard.putNumber("Flywheel Temperature", MainRoller1.getDeviceTemp().getValueAsDouble());
         SmartDashboard.putNumber("Hood Position", HoodKraken.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Encoder Position", hoodAbsoluteEncoder.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("convertHoodPosition", convertHoodPosition(1.25));
