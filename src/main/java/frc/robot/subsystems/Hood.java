@@ -8,8 +8,16 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Hood extends SubsystemBase {
     
-    private final TalonFX motor1 = new TalonFX(1);
-    private final TalonFX motor2 = new TalonFX(2);
+    private final TalonFX MainRoller1 = new TalonFX(1);
+    private final TalonFX MainRoller2 = new TalonFX(2);
+    private final TalonFX MainRoller3 = new TalonFX(2);
+    private final TalonFX MainRoller4 = new TalonFX(2);
+    private final TalonFX Kicker1 = new TalonFX(2);
+    private final TalonFX Kicker2 = new TalonFX(2);
+    private final TalonFX Kicker3 = new TalonFX(2);
+    
+
+
 
     public Hood() {
         configureMotor(motor1);
