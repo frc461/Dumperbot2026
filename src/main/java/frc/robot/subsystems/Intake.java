@@ -1,31 +1,97 @@
 package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut; 
 import com.ctre.phoenix6.hardware.TalonFX; 
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
     
-    private final TalonFX motor1 = new TalonFX(1);
-    private final TalonFX motor2 = new TalonFX(2);
+    private final TalonFX DeployKraken = new TalonFX(52);
+    private final TalonFX IntakeRollerKraken = new TalonFX(2);
 
     public Intake() {
-        configureMotor(motor1);
-        configureMotor(motor2);
+        configureMotor(DeployKraken);
+        configureMotor(IntakeRollerKraken);
     }
 
     private final VoltageOut voltageControl = new VoltageOut(0);
 
     private void configureMotor(TalonFX motor) {
         TalonFXConfiguration config = new TalonFXConfiguration(); 
-
+        DeployKraken.getConfigurator().apply(new TalonFXConfiguration());
         config.CurrentLimits.SupplyCurrentLimit = 40.0; 
         config.CurrentLimits.SupplyCurrentLowerLimit = 30.0; 
         config.CurrentLimits.SupplyCurrentLowerTime = 0.1; 
         config.CurrentLimits.StatorCurrentLimit = 60.0; 
         config.CurrentLimits.StatorCurrentLimitEnable = true; 
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake; 
-        motor.getConfigurator().apply(config); }
+        motor.getConfigurator().apply(config); 
+        DeployKraken.getConfigurator().apply(config);
+        DeployKraken.setPosition(0);
+    }
+    private final DigitalInput RightForwardLimitSwitch = new DigitalInput(0);
+    private final DigitalInput LeftForwardLimitSwitch = new DigitalInput(1);
+    private final DigitalInput RearLimitSwitch = new DigitalInput(2);
+
+    public void setIntakeVoltage(double volts) {
+        IntakeRollerKraken.setControl(voltageControl.withOutput(volts));
+    }
+
+    public void setDeployVoltage(double volts) {
+        DeployKraken.setControl(voltageControl.withOutput(volts));
+    }
+
+        private final VelocityVoltage velocityControl = new VelocityVoltage(0);
+
+
+    public void setVelocity(double rotationsPerSecond) {
+        DeployKraken.setControl(
+            velocityControl.withVelocity(rotationsPerSecond)
+        );
+        IntakeRollerKraken.setControl(
+            velocityControl.withVelocity(rotationsPerSecond)
+        );
+    }
+
+    public void CheckRearLimitSwitch() {
+        if (!RearLimitSwitch.get()) {
+            DeployKraken.setPosition(0);
+        }
+    }
+
+    public void ResetExtension() {
+        if (!RightForwardLimitSwitch.get() && !LeftForwardLimitSwitch.get()) {
+            DeployKraken.setPosition(-70);
+        }
+    }
+
+    public void ExtendIntake() {
+        DeployKraken.setControl(positionControl.withPosition(-70)
+        .withLimitForwardMotion(!RightForwardLimitSwitch.get() && !LeftForwardLimitSwitch.get())
+        );
+    }
+
+    public void RetractIntake() {
+        DeployKraken.setControl(positionControl.withPosition(0));
+    }
+     @Override
+    public void periodic() {
+
+        SmartDashboard.putBoolean("Right Forward Limit Switch", !RightForwardLimitSwitch.get());
+        SmartDashboard.putBoolean("Left Forward Limit Switch", !LeftForwardLimitSwitch.get());
+        SmartDashboard.putBoolean("Rear Limit Switch", !RearLimitSwitch.get());
+        SmartDashboard.putNumber("Intake Position", DeployKraken.getPosition().getValueAsDouble());
+        CheckRearLimitSwitch();
+        ResetExtension();
+
+        
+        
+    }
+}
+
 }

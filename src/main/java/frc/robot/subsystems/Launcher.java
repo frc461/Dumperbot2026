@@ -6,12 +6,12 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Hood extends SubsystemBase {
+public class Launcher extends SubsystemBase {
     
     private final TalonFX motor1 = new TalonFX(1);
     private final TalonFX motor2 = new TalonFX(2);
 
-    public Hood() {
+    public Launcher() {
         configureMotor(motor1);
         configureMotor(motor2);
     }
