@@ -6,12 +6,12 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class HoodRollers extends SubsystemBase {
+public class Hood extends SubsystemBase {
     
     private final TalonFX motor1 = new TalonFX(1);
     private final TalonFX motor2 = new TalonFX(2);
 
-    public HoodRollers() {
+    public Hood() {
         configureMotor(motor1);
         configureMotor(motor2);
     }
@@ -29,4 +29,3 @@ public class HoodRollers extends SubsystemBase {
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake; 
         motor.getConfigurator().apply(config); }
 }
-
